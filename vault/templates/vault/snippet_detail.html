@@ -1,0 +1,143 @@
+{% extends "vault/base.html" %}
+{% block title %}{{ obj.title }} — QueryVault{% endblock %}
+{% block content %}
+
+<style>
+  /* SQL блок дотроос сонгож хуулж болохгүй (зөвхөн товчоор хуулна) */
+  #sqlBlock, #sqlBlock * {
+    user-select: none;
+    -webkit-user-select: none;
+  }
+</style>
+
+<article class="card">
+  <header class="card-header flex items-center justify-between">
+    <div>
+      <h2 class="text-xl font-semibold">{{ obj.title }}</h2>
+      <div class="mt-1 flex items-center gap-3 text-sm text-slate-500">
+        <span>{{ obj.get_db_type_display }}</span>
+        {% if obj.tags %}
+          <span class="flex items-center gap-1">
+            {% for t in obj.tag_list %}<span class="chip">{{ t }}</span>{% endfor %}
+          </span>
+        {% endif %}
+        <span>Updated: {{ obj.updated_at|date:"Y-m-d H:i" }}</span>
+        <span>By: {{ obj.created_by|default:"—" }}</span>
+        <span>Used: <strong id="useCount">{{ obj.use_count }}</strong></span>
+      </div>
+    </div>
+    <div class="flex items-center gap-2">
+      <!-- Button-look anchors (Tailwind классуудыг шууд тавив; @apply хэрэггүй) -->
+      <a href="{% url 'vault:snippet_update' pk=obj.id %}"
+         class="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border border-slate-300 bg-white hover:bg-slate-50 text-slate-700">
+        Edit
+      </a>
+      <!-- Mark Used-ийг авч хаясан -->
+      <button id="copyBtn" type="button"
+              class="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700">
+        Copy SQL
+      </button>
+    </div>
+  </header>
+
+  <div class="card-body">
+    {% if obj.description %}<p class="mb-3 text-slate-700">{{ obj.description }}</p>{% endif %}
+    <pre id="sqlBlock" tabindex="0"
+         class="overflow-auto bg-slate-50 border border-slate-200 rounded-xl p-4 text-sm"><code>{{ obj.sql_text }}</code></pre>
+    <p id="copyHint" class="mt-2 text-xs text-slate-500">Copy хийхдээ “Copy SQL” товчийг ашиглана уу.</p>
+  </div>
+</article>
+
+<script>
+  // --- CSRF ---
+  function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+      const cookies = document.cookie.split(';');
+      for (let i = 0; i < cookies.length; i++) {
+        const cookie = cookies[i].trim();
+        if (cookie.substring(0, name.length + 1) === (name + '=')) {
+          cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+          break;
+        }
+      }
+    }
+    return cookieValue;
+  }
+  const csrftoken = getCookie('csrftoken');
+  const SNIPPET_ID = {{ obj.id }};
+
+  async function logCopyAndUpdateCount() {
+    const r = await fetch(`/s/${SNIPPET_ID}/copy/`, {
+      method: 'POST',
+      headers: { 'X-CSRFToken': csrftoken }
+    });
+    if (r.ok) {
+      const data = await r.json();
+      if (data.ok && typeof data.use_count === 'number') {
+        const uc = document.getElementById('useCount');
+        if (uc) uc.textContent = data.use_count;
+      }
+    }
+  }
+
+  async function copyText(txt) {
+    try {
+      await navigator.clipboard.writeText(txt);  // secure-context (localhost OK)
+      return true;
+    } catch (e) {
+      // Fallback (хуучин browser-ууд)
+      try {
+        const ta = document.createElement('textarea');
+        ta.value = txt;
+        ta.style.position = 'fixed';
+        ta.style.left = '-9999px';
+        document.body.appendChild(ta);
+        ta.focus(); ta.select();
+        const ok = document.execCommand('copy');
+        document.body.removeChild(ta);
+        return ok;
+      } catch (_) { return false; }
+    }
+  }
+
+  // Зөвхөн товчоор хуулна
+  document.getElementById('copyBtn')?.addEventListener('click', async () => {
+    const txt = document.getElementById('sqlBlock').innerText;
+    const ok = await copyText(txt);
+    if (ok) {
+      await logCopyAndUpdateCount();
+      const b = document.getElementById('copyBtn');
+      b.textContent = 'Copied!';
+      setTimeout(() => (b.textContent = 'Copy SQL'), 1200);
+    } else {
+      alert('Copy blocked by browser settings.');
+    }
+  });
+
+  // SQL блок доторхи бүх хуулалтыг (Ctrl/Cmd+C, context menu) хориглоно
+  const sqlBlock = document.getElementById('sqlBlock');
+  document.addEventListener('copy', (e) => {
+    const sel = window.getSelection ? window.getSelection() : null;
+    if (!sqlBlock || !sel || sel.isCollapsed) return;
+    const wrap = n => (n ? (n.nodeType === 1 ? n : n.parentElement) : null);
+    const inSql = (wrap(sel.anchorNode) && sqlBlock.contains(wrap(sel.anchorNode))) ||
+                  (wrap(sel.focusNode)  && sqlBlock.contains(wrap(sel.focusNode)));
+    if (!inSql) return;
+    e.preventDefault();
+    nudgeHint();
+  });
+  sqlBlock.addEventListener('keydown', (ev) => {
+    const isMac = /Mac|iPhone|iPad/.test(navigator.platform);
+    const isCopyCombo = (isMac ? ev.metaKey : ev.ctrlKey) && (ev.key === 'c' || ev.key === 'C');
+    if (isCopyCombo) { ev.preventDefault(); nudgeHint(); }
+  });
+
+  function nudgeHint() {
+    const b = document.getElementById('copyBtn');
+    const hint = document.getElementById('copyHint');
+    if (b) { b.textContent = 'Use “Copy SQL”'; setTimeout(() => (b.textContent = 'Copy SQL'), 1200); }
+    if (hint) { hint.classList.add('text-blue-600'); setTimeout(()=>hint.classList.remove('text-blue-600'), 900); }
+  }
+</script>
+{% endblock %}

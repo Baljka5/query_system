@@ -1,0 +1,6 @@
+Django>=5.0
+djangorestframework>=3.15.0
+django-filter>=24.2
+PyMySQL
+
+sqlglot>=23.0.0

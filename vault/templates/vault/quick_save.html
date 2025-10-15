@@ -1,0 +1,170 @@
+{% load static %}
+<!doctype html>
+<html lang="mn">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Quick Save — QueryVault</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- CodeMirror 5 (light theme: eclipse) -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/codemirror@5.65.16/lib/codemirror.css">
+    <script src="https://cdn.jsdelivr.net/npm/codemirror@5.65.16/lib/codemirror.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/codemirror@5.65.16/mode/sql/sql.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/codemirror@5.65.16/theme/eclipse.css">
+
+    <style>
+        .CodeMirror { height: 420px; border-radius: 0.75rem; border: 1px solid rgb(226 232 240); }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-900">
+    <header class="bg-white border-b border-slate-200">
+        <div class="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
+            <a href="{% url 'vault:snippet_list' %}" class="font-semibold text-slate-900">QueryVault</a>
+            <nav class="flex items-center gap-3">
+                <a href="{% url 'vault:snippet_create' %}" class="inline-flex items-center px-3 py-1.5 rounded-lg border border-slate-300 bg-white hover:bg-slate-50">Classic Create</a>
+                <a href="{% url 'vault:quick_save' %}" class="inline-flex items-center px-3 py-1.5 rounded-lg border border-slate-300 bg-blue-600 text-white hover:bg-blue-700">Quick Save</a>
+                <a href="/admin/" class="inline-flex items-center px-3 py-1.5 rounded-lg border border-slate-300 bg-white hover:bg-slate-50">Admin</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="max-w-6xl mx-auto px-4 py-6">
+        <div class="grid md:grid-cols-2 gap-6">
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm text-slate-700 mb-1">Гарчиг (Title)</label>
+                    <input id="title" type="text" placeholder="Ж: Last month sales by store"
+                           class="w-full px-3 py-2 rounded-xl bg-white border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-600/20">
+                </div>
+
+                <div>
+                    <label class="block text-sm text-slate-700 mb-1">Тайлбар (Description)</label>
+                    <textarea id="description" rows="3" placeholder="Энэ query юу хийдэг тухай тайлбар"
+                              class="w-full px-3 py-2 rounded-xl bg-white border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-600/20"></textarea>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm text-slate-700 mb-1">DB Type</label>
+                        <select id="db_type"
+                                class="w-full px-3 py-2 rounded-xl bg-white border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-600/20">
+                            <option value="postgres">PostgreSQL</option>
+                            <option value="mysql" selected>MySQL/MariaDB</option>
+                            <option value="sqlite">SQLite</option>
+                            <option value="mssql">SQL Server</option>
+                            <option value="clickhouse">ClickHouse</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm text-slate-700 mb-1">Тагууд (Tags, comma-separated)</label>
+                        <input id="tags" type="text" placeholder="store, sales, monthly"
+                               class="w-full px-3 py-2 rounded-xl bg-white border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-600/20">
+                    </div>
+                </div>
+            </div>
+
+            <div class="space-y-2">
+                <label class="block text-sm text-slate-700">SQL Query</label>
+                <textarea id="sql_text" class="hidden"></textarea>
+                <div id="editor" class="rounded-xl overflow-hidden bg-white"></div>
+            </div>
+        </div>
+
+        <div class="mt-6 flex items-center gap-3">
+            <button id="saveBtn"
+                    class="px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-medium">
+                Save
+            </button>
+            <span id="status" class="text-sm text-slate-500"></span>
+        </div>
+
+        <!-- Toast -->
+        <div id="toast" class="hidden fixed bottom-6 right-6 bg-white border border-slate-200 px-4 py-3 rounded-xl shadow-xl">
+            <div class="font-medium" id="toast-msg">Saved</div>
+            <div class="text-xs text-slate-500 mt-1" id="toast-sub"></div>
+        </div>
+    </main>
+
+    <script>
+        // CSRF helper
+        function getCookie(name) {
+          let cookieValue = null;
+          if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+              const cookie = cookies[i].trim();
+              if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+              }
+            }
+          }
+          return cookieValue;
+        }
+        const csrftoken = getCookie('csrftoken');
+
+        // CodeMirror init
+        const cm = CodeMirror(document.getElementById('editor'), {
+            mode: 'text/x-sql',
+            theme: 'eclipse',
+            lineNumbers: true,
+            tabSize: 2,
+            indentWithTabs: false,
+            viewportMargin: Infinity,
+        });
+
+        // Demo value
+        cm.setValue("SELECT store_id, SUM(amount) AS total\nFROM sales\nWHERE date >= CURDATE() - INTERVAL 30 DAY\nGROUP BY store_id\nORDER BY total DESC;\n");
+
+        // Toast
+        function showToast(msg, sub) {
+            const t = document.getElementById('toast');
+            document.getElementById('toast-msg').textContent = msg || 'Saved';
+            document.getElementById('toast-sub').textContent = sub || '';
+            t.classList.remove('hidden');
+            setTimeout(() => t.classList.add('hidden'), 2400);
+        }
+
+        // Save
+        document.getElementById('saveBtn').addEventListener('click', async () => {
+            const title = document.getElementById('title').value.trim();
+            const description = document.getElementById('description').value.trim();
+            const db_type = document.getElementById('db_type').value;
+            const tags = document.getElementById('tags').value.trim();
+            const sql_text = cm.getValue();
+
+            if (!title || !sql_text) {
+                showToast('Title болон SQL заавал хэрэгтэй', 'Fill required fields');
+                return;
+            }
+
+            const payload = { title, description, db_type, tags, sql_text };
+
+            try {
+                const r = await fetch('/api/snippets/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrftoken
+                    },
+                    body: JSON.stringify(payload)
+                });
+                if (!r.ok) {
+                    const txt = await r.text();
+                    throw new Error(txt || ('HTTP ' + r.status));
+                }
+                const data = await r.json();
+                showToast('Амжилттай хадгаллаа', 'ID: ' + data.id + ' • ' + (data.title || ''));
+                document.getElementById('status').textContent = 'Saved #' + data.id;
+            } catch (e) {
+                console.error(e);
+                showToast('Алдаа гарлаа', e.message);
+                document.getElementById('status').textContent = 'Error: ' + e.message;
+            }
+        });
+    </script>
+</body>
+</html>

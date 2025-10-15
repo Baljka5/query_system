@@ -1,0 +1,146 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>{% block title %}QueryVault{% endblock %}</title>
+
+    <!-- Tailwind (CDN) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Inter font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        html {
+            font-family: Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+        }
+
+        /* Tailwind-тэй төстэй utility-г энгийн CSS-ээр */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: .5rem;
+            padding: .375rem .75rem;
+            border-radius: .5rem;
+            border: 1px solid #cbd5e1;
+            background: #fff;
+            color: #334155;
+            text-decoration: none;
+            transition: background .15s ease;
+        }
+
+        .btn:hover {
+            background: #f8fafc
+        }
+
+        .btn-primary {
+            background: #2563eb;
+            color: #fff;
+            border-color: transparent
+        }
+
+        .btn-primary:hover {
+            background: #1d4ed8
+        }
+
+        .chip {
+            display: inline-flex;
+            align-items: center;
+            padding: .125rem .5rem;
+            border-radius: 9999px;
+            font-size: .75rem;
+            background: #f1f5f9;
+            color: #334155;
+            border: 1px solid #e2e8f0
+        }
+
+        .card {
+            background: #fff;
+            border: 1px solid #e2e8f0;
+            border-radius: 1rem;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, .04)
+        }
+
+        .card-header {
+            padding: 1rem 1.25rem;
+            border-bottom: 1px solid #e2e8f0
+        }
+
+        .card-body {
+            padding: 1.25rem
+        }
+
+        .input {
+            width: 100%;
+            padding: .5rem .75rem;
+            border-radius: .75rem;
+            border: 1px solid #cbd5e1;
+            background: #fff;
+            outline: none
+        }
+
+        .input:focus {
+            box-shadow: 0 0 0 .2rem rgba(37, 99, 235, .2)
+        }
+
+        .select {
+            width: 100%;
+            padding: .5rem .75rem;
+            border-radius: .75rem;
+            border: 1px solid #cbd5e1;
+            background: #fff
+        }
+    </style>
+
+    {% block extra_head %}{% endblock %}
+</head>
+<body class="bg-slate-50 text-slate-900">
+<!-- Header -->
+<header class="bg-white border-b border-slate-200 sticky top-0 z-10">
+    <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
+        <a href="{% url 'vault:snippet_list' %}" class="font-semibold text-lg">QueryVault</a>
+
+        <nav class="flex items-center gap-3 text-sm">
+            <a href="{% url 'vault:generate_sql' %}" class="btn">Generate</a>
+            <a href="{% url 'vault:snippet_create' %}" class="btn">+ New</a>
+            <a href="{% url 'vault:quick_save' %}" class="btn">Quick Save</a>
+
+            {% if request.user.is_authenticated %}
+            <span class="hidden sm:inline text-slate-600">
+            Signed in as <strong>{{ request.user.username }}</strong>
+          </span>
+            {% if request.user.is_staff %}
+            <a href="/admin/" class="btn">Admin</a>
+            {% endif %}
+
+            <!-- Logout must be POST on Django 5 -->
+            <form action="{% url 'vault:logout' %}" method="post" class="inline">
+                {% csrf_token %}
+                <button type="submit" class="btn">Logout</button>
+            </form>
+            {% else %}
+            <a href="{% url 'vault:login' %}" class="btn">Login</a>
+            {% endif %}
+        </nav>
+    </div>
+</header>
+
+<!-- Main -->
+<main class="max-w-6xl mx-auto px-4 py-6">
+    {% block content %}{% endblock %}
+</main>
+
+<!-- Footer -->
+<footer class="bg-white border-t border-slate-200 mt-10">
+    <div class="max-w-6xl mx-auto px-4 py-6 text-slate-500 text-sm">
+        QueryVault • Django demo
+    </div>
+</footer>
+
+{% block extra_js %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,34 @@
+{% extends "vault/base.html" %}
+{% block title %}{% if obj %}Edit{% else %}New{% endif %} — QueryVault{% endblock %}
+{% block content %}
+<form method="post" class="card max-w-3xl">{% csrf_token %}
+  <div class="card-body grid gap-4">
+    <div>
+      <label class="block text-sm text-slate-600 mb-1">Title</label>
+      {{ form.title|add_class:"input" }}
+    </div>
+    <div>
+      <label class="block text-sm text-slate-600 mb-1">Description</label>
+      {{ form.description|add_class:"input" }}
+    </div>
+    <div>
+      <label class="block text-sm text-slate-600 mb-1">SQL</label>
+      {{ form.sql_text|add_class:"input" }}
+    </div>
+    <div class="grid md:grid-cols-3 gap-4">
+      <div>
+        <label class="block text-sm text-slate-600 mb-1">DB Type</label>
+        {{ form.db_type|add_class:"input" }}
+      </div>
+      <div class="md:col-span-2">
+        <label class="block text-sm text-slate-600 mb-1">Tags</label>
+        {{ form.tags|add_class:"input" }}
+      </div>
+    </div>
+    <div class="flex items-center gap-3 pt-2">
+      <button class="btn btn-primary" type="submit">Save</button>
+      {% if obj %}<a class="btn" href="{% url 'vault:snippet_detail' pk=obj.id %}">Cancel</a>{% endif %}
+    </div>
+  </div>
+</form>
+{% endblock %}
