@@ -53,25 +53,24 @@ TEMPLATES = [
 WSGI_APPLICATION = "queryvault.wsgi.application"
 
 # Default: SQLite (easy dev). Switch to MySQL by editing this block.
-if os.getenv("DB_ENGINE"):
-    DATABASES = {
-        "default": {
-            "ENGINE": os.getenv("DB_ENGINE"),
-            "NAME": os.getenv("DB_NAME"),
-            "USER": os.getenv("DB_USER", ""),
-            "PASSWORD": os.getenv("DB_PASSWORD", ""),
-            "HOST": os.getenv("DB_HOST", ""),
-            "PORT": os.getenv("DB_PORT", ""),
-            "OPTIONS": {"charset": "utf8mb4"},
-        }
+DATABASES = {
+    "default": {
+        "ENGINE": os.getenv("DB_ENGINE", "django.db.backends.mysql"),
+        "NAME": os.getenv("DB_NAME", "queryvault"),
+        "USER": os.getenv("DB_USER", "qv_user"),
+        "PASSWORD": os.getenv("DB_PASSWORD", "Change_123"),
+        "HOST": os.getenv("DB_HOST", "10.10.90.237"),
+        "PORT": os.getenv("DB_PORT", 3306),
+        "OPTIONS": {"charset": "utf8mb4"},
     }
-else:
-    DATABASES = {
-        "default": {
-            "ENGINE": "django.db.backends.sqlite3",
-            "NAME": BASE_DIR / "db.sqlite3",
-        }
-    }
+}
+# else:
+#     DATABASES = {
+#         "default": {
+#             "ENGINE": "django.db.backends.sqlite3",
+#             "NAME": BASE_DIR / "db.sqlite3",
+#         }
+#     }
 
 AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
