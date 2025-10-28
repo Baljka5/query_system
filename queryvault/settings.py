@@ -52,7 +52,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "queryvault.wsgi.application"
 
-# Default: SQLite (easy dev). Switch to MySQL by editing this block.
 DATABASES = {
     "default": {
         "ENGINE": os.getenv("DB_ENGINE", "django.db.backends.mysql"),
@@ -84,7 +83,8 @@ TIME_ZONE = os.getenv("TZ", "Asia/Ulaanbaatar")
 USE_I18N = True
 USE_TZ = True
 
-STATIC_URL = "static/"
+STATIC_URL = "/static/"
+STATIC_ROOT = BASE_DIR / "staticfiles"
 STATICFILES_DIRS = [BASE_DIR / "vault" / "static"]
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
