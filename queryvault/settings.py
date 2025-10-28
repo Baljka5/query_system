@@ -10,7 +10,10 @@ ALLOWED_HOSTS = os.getenv(
     "127.0.0.1,localhost,it.cumongol.mn"
 ).split(",")
 
+DEBUG = False
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
 
 CSRF_TRUSTED_ORIGINS = os.getenv(
     "CSRF_TRUSTED_ORIGINS",
