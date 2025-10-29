@@ -94,6 +94,12 @@
             border: 1px solid #cbd5e1;
             background: #fff
         }
+
+        .disabled-link {
+            pointer-events: none;
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
     </style>
 
     {% block extra_head %}{% endblock %}
@@ -105,8 +111,8 @@
         <a href="{% url 'vault:snippet_list' %}" class="font-semibold text-lg">QueryVault</a>
 
         <nav class="flex items-center gap-3 text-sm">
-            <a href="{% url 'vault:generate_sql' %}" class="btn">Generate</a>
-            <a href="{% url 'vault:snippet_create' %}" class="btn">+ New</a>
+            <a href="{% url 'vault:generate_sql' %}" class="btn disabled-link">Generate</a>
+            <a href="{% url 'vault:snippet_create' %}" class="btn disabled-link">+ New</a>
             <a href="{% url 'vault:quick_save' %}" class="btn">Quick Save</a>
 
             {% if request.user.is_authenticated %}
@@ -137,7 +143,7 @@
 <!-- Footer -->
 <footer class="bg-white border-t border-slate-200 mt-10">
     <div class="max-w-6xl mx-auto px-4 py-6 text-slate-500 text-sm">
-        QueryVault • Django demo
+        QueryVault
     </div>
 </footer>
 

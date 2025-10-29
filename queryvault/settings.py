@@ -14,11 +14,14 @@ SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
 
+SESSION_COOKIE_AGE = 180
+SESSION_SAVE_EVERY_REQUEST = True
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True
+
 CSRF_TRUSTED_ORIGINS = os.getenv(
     "CSRF_TRUSTED_ORIGINS",
     "https://it-mgt.cumongol.mn"
 ).split(",")
-
 
 LOGIN_URL = 'vault:login'
 LOGIN_REDIRECT_URL = 'vault:snippet_list'
