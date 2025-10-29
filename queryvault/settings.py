@@ -7,7 +7,7 @@ SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "dev-secret-key-please-change")
 DEBUG = os.getenv("DEBUG", "1") == "1"
 ALLOWED_HOSTS = os.getenv(
     "ALLOWED_HOSTS",
-    "127.0.0.1,localhost,it.cumongol.mn"
+    "127.0.0.1,localhost,it-mgt.cumongol.mn"
 ).split(",")
 
 DEBUG = False
