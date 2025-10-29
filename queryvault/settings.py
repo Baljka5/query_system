@@ -17,7 +17,7 @@ CSRF_COOKIE_SECURE = True
 
 CSRF_TRUSTED_ORIGINS = os.getenv(
     "CSRF_TRUSTED_ORIGINS",
-    "https://it.cumongol.mn"
+    "https://it-mgt.cumongol.mn"
 ).split(",")
 
 
