@@ -1,3 +1,5 @@
+# /var/www/query_system/queryvault/urls.py
+
 from django.contrib import admin
 from django.urls import path, include
 from django.contrib.auth import views as auth_views
@@ -5,11 +7,15 @@ from django.conf import settings
 from django.conf.urls.static import static
 
 urlpatterns = [
-    path("admin/logout/", auth_views.LogoutView.as_view(next_page="/admin/login/"), name="admin-logout"),
+    path(
+        "admin/logout/",
+        auth_views.LogoutView.as_view(next_page="/admin/login/"),
+        name="admin-logout",
+    ),
 
     path("admin/", admin.site.urls),
-    path("query/", include("vault.urls")),
 
+    path("", include("vault.urls")),
     path("api/", include("vault.api_urls")),
 ]
 
