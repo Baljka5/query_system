@@ -8,7 +8,7 @@ urlpatterns = [
     path("admin/logout/", auth_views.LogoutView.as_view(next_page="/admin/login/"), name="admin-logout"),
 
     path("admin/", admin.site.urls),
-    path("", include("vault.urls")),
+    path("query/", include("vault.urls")),
 
     path("api/", include("vault.api_urls")),
 ]

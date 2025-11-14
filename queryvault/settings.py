@@ -99,7 +99,9 @@ TIME_ZONE = os.getenv("TZ", "Asia/Ulaanbaatar")
 USE_I18N = True
 USE_TZ = True
 
-STATIC_URL = "/static/"
+STATIC_URL = '/query/static/'
+MEDIA_URL = '/query/media/'
+
 STATIC_ROOT = BASE_DIR / "staticfiles"
 STATICFILES_DIRS = [BASE_DIR / "vault" / "static"]
 

@@ -6,11 +6,10 @@ from views_auth import LogoutGetOK
 from . import views
 from .views_quick import QuickSave
 from .view_generate import \
-    GenerateSQL  # Хэрвээ GenerateSQL танай views.py-д байвал энэ мөрийг: from .views import GenerateSQL гэж солиорой.
+    GenerateSQL
 from .api_views import QuerySnippetViewSet
 from django.contrib.auth import views as auth_views
 
-# DEBUG үед static serve хийхэд
 from django.conf import settings
 from django.conf.urls.static import static
 
@@ -25,8 +24,6 @@ urlpatterns = [
     path("login/", auth_views.LoginView.as_view(template_name="vault/login.html"), name="login"),
     path("logout/", auth_views.LogoutView.as_view(next_page="vault:login"), name="logout"),
 
-    # --- Нэмэлт: Password change/reset урсгалууд (хүсвэл ашиглана) ---
-    # Эдгээрийг ашиглах бол template бэлдэх эсвэл default template-уудыг ашиглана.
     path("accounts/password_change/",
          auth_views.PasswordChangeView.as_view(template_name="vault/password_change.html"),
          name="password_change"),
@@ -61,6 +58,5 @@ urlpatterns = [
     path("api/", include(router.urls)),
 ]
 
-# Dev (DEBUG=True) үед static файлууд
 if settings.DEBUG:
     urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
