@@ -5,7 +5,7 @@ from django.utils.decorators import method_decorator
 from django.views import View
 from django.views.generic import DetailView, ListView
 from django.contrib import messages
-from django.http import Http404, JsonResponse
+from django.http import Http404, JsonResponse, HttpResponseForbidden
 
 from .models import QuerySnippet, SnippetCopyLog, classify_sql_kind
 from .forms import SnippetForm
@@ -100,10 +100,13 @@ class SnippetDetail(LoginRequiredMixin, DetailView):
 @method_decorator(login_required, name="dispatch")
 class SnippetCreate(View):
     def get(self, request):
-        return render(request, "vault/snippet_form.html", {"form": SnippetForm()})
+        form = SnippetForm()
+        _limit_form_db_types(form, request.user)
+        return render(request, "vault/snippet_form.html", {"form": form})
 
     def post(self, request):
         form = SnippetForm(request.POST)
+        _limit_form_db_types(form, request.user)
         if form.is_valid():
             # Эрх шалгалт
             candidate = form.save(commit=False)
@@ -131,18 +134,15 @@ class SnippetCreate(View):
 class SnippetUpdate(View):
     def get(self, request, pk):
         obj = get_object_or_404(QuerySnippet, pk=pk)
-        # Update формаар үзэхдээ ч харах эрхийг шалгана
-        kinds = allowed_sql_kinds_for(request.user)
-        db_types = allowed_db_types_for(request.user)
-        if obj.sql_kind not in kinds or (db_types is not None and obj.db_type not in db_types):
-            raise Http404("Not found")
-
+        ...
         form = SnippetForm(instance=obj)
+        _limit_form_db_types(form, request.user)
         return render(request, "vault/snippet_form.html", {"form": form, "obj": obj})
 
     def post(self, request, pk):
         obj = get_object_or_404(QuerySnippet, pk=pk)
         form = SnippetForm(request.POST, instance=obj)
+        _limit_form_db_types(form, request.user)
         if form.is_valid():
             candidate = form.save(commit=False)
             # Эрхийн шалгалт (шинэ утгаар)
@@ -215,3 +215,25 @@ def copy_event(request, pk):
     )
 
     return JsonResponse({"ok": True, "use_count": obj.use_count})
+
+
+def _limit_form_db_types(form, user):
+    allowed = allowed_db_types_for(user)
+    if allowed is None:
+        return form  # бүх DB type OK
+
+    field = form.fields.get("db_type")
+    if field:
+        field.choices = [(val, label) for val, label in field.choices if val in allowed]
+    return form
+
+@method_decorator(login_required, name="dispatch")
+class SnippetDelete(View):
+    def post(self, request, pk):
+        if not request.user.is_superuser:
+            return HttpResponseForbidden("Only admins can delete snippets.")
+
+        obj = get_object_or_404(QuerySnippet, pk=pk)
+        obj.delete()
+        messages.success(request, "Snippet амжилттай устлаа.")
+        return redirect("vault:snippet_list")

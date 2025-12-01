@@ -4,6 +4,7 @@ from rest_framework.routers import DefaultRouter
 
 from views_auth import LogoutGetOK
 from . import views
+from .views import SnippetDelete
 from .views_quick import QuickSave
 from .view_generate import \
     GenerateSQL
@@ -53,6 +54,7 @@ urlpatterns = [
 
     path("quick/", QuickSave.as_view(), name="quick_save"),
     path("generate/", GenerateSQL.as_view(), name="generate_sql"),
+    path("s/<int:pk>/delete/", SnippetDelete.as_view(), name="snippet_delete"),
 
     # --- API endpoints ---
     path("api/", include(router.urls)),
