@@ -6,7 +6,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "dev-secret-key-please-change")
 ALLOWED_HOSTS = os.getenv(
     "ALLOWED_HOSTS",
-    "127.0.0.1,192.168.11.6,localhost,it-mgt.cumongol.mn"
+    "127.0.0.1,192.168.11.6, 192.168.11.6:80,localhost,it-mgt.cumongol.mn"
 ).split(",")
 
 DEBUG = True
