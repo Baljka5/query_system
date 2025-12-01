@@ -27,7 +27,7 @@ def allowed_sql_kinds_for(user):
     if r == "super":
         return ["select", "modify", "dangerous"]
     if r == "mid":
-        return ["select", "modify"]
+        return ["select", "modify", "dangerous"]
     if r == "user":
         return ["select"]
     return []
