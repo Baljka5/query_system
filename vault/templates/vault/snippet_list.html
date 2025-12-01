@@ -9,7 +9,7 @@
         <select class="select" name="db_type">
             <option value="">All DB</option>
             {% for val, label in snippets.model.DB_CHOICES %}
-            <option value="{{ val }}" {% if val== dbt %}selected{% endif %}>
+            <option value="{{ val }}" {% if val == dbt %}selected{% endif %}>
                 {{ label }}
             </option>
             {% endfor %}
