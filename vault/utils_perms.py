@@ -23,21 +23,16 @@ def user_role(user) -> str:
 def allowed_sql_kinds_for(user):
     r = user_role(user)
 
-    if r == "admin":
-        return ["select", "modify", "insert", "dangerous"]
-
-    if r == "super":
-        return ["select", "modify", "insert", "dangerous"]
+    if r in ("admin", "super"):
+        return ["select", "modify", "dangerous"]
 
     if r == "mid":
-        return ["select", "modify", "insert"]
+        return ["select", "modify"]
 
     if r == "user":
         return ["select"]
 
-    # anon
     return []
-
 
 def allowed_db_types_for(user):
     if user_role(user) == "admin":
