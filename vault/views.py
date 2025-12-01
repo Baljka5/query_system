@@ -41,6 +41,7 @@ class SnippetList(LoginRequiredMixin, ListView):
     model = QuerySnippet
     template_name = "vault/snippet_list.html"
     context_object_name = "snippets"
+    paginate_by = 10
 
     def get_queryset(self):
         qs = super().get_queryset().order_by("-updated_at")
