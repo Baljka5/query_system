@@ -18,12 +18,11 @@ SESSION_COOKIE_AGE = 180
 SESSION_SAVE_EVERY_REQUEST = True
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 
-CSRF_TRUSTED_ORIGINS = os.getenv(
-    "CSRF_TRUSTED_ORIGINS",
+CSRF_TRUSTED_ORIGINS = [
     "http://192.168.11.6",
-    "http://192.168.11.6:80",
-    "https://it-mgt.cumongol.mn"
-).split(",")
+    "http://it-mgt.cumongol.mn",
+    "https://it-mgt.cumongol.mn",
+]
 
 LOGIN_URL = 'vault:login'
 LOGIN_REDIRECT_URL = 'vault:snippet_list'
